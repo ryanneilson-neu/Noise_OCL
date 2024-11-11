@@ -290,30 +290,12 @@ def calculate_pixel_area(coordinate_list_as_floats):
 
             return (pixel_area)
 
-def pixel_area_to_um_sqrd(pixel_area, ratio):
+def pixel_area_to_um_sqrd(pixel_area, um_per_pixel):
      
     '''This function will calculate the area of each ocl in um^2.
-    Calculations will be based on ratio given by the user.'''
+    Calculations will be based on um_per_pixel ratio given by the user.'''
 
-    # Tie this into the ratio argument, the use will enter a ratio 
-    # For pixel area to um^2 at 4X
-    '''if magnification == "4":
-        um_sqrd_area = pixel_area * ((1.883) ** 2)
-
-    # For pixel area to um^2 at 10X
-    elif magnification == "10":
-        um_sqrd_area = pixel_area * ((0.75488) ** 2)
-
-    # For pixel area to um^2 at 20X
-    elif magnification == "20":
-        um_sqrd_area = pixel_area * ((0.40825) ** 2)
-
-    # For pixel area to um^2 at 40X
-    elif magnification == "40":
-        um_sqrd_area = pixel_area * ((0.401) ** 2)'''
-
-    
-    um_sqrd_area = pixel_area * ((ratio) ** 2)
+    um_sqrd_area = pixel_area * ((um_per_pixel) ** 2)
     return round(um_sqrd_area, 3)
 
 def total_area_per_well(area_list):
@@ -353,7 +335,6 @@ def main(argv):
     parser.add_argument("--model_path", type=str, default="out")
     parser.add_argument("--ratio", type=float, default=0.7784) #um per pixel
     parser.add_argument("--device", type=str, default='cpu')
-    #parser.add_argument("--magnification", type=str, default="10")
     parser.add_argument("--total_well_area_in_pixels", type = int, default = 0)
 
     args = parser.parse_args()
@@ -364,7 +345,6 @@ def main(argv):
     out_dir = args.out_foldername
     img_dir = args.img_foldername
 
-    #magnification = args.magnification
     well_area_in_pixels = args.total_well_area_in_pixels
 
     global DEVICE
@@ -419,18 +399,12 @@ def main(argv):
 
                 pixel_area_list.append(pixel_area)
 
-                  
-        #print("The pixel area list is", pixel_area_list, "\n")
-
         # Below will determine the total area of ocls in each well in um^2.
 
         # This will calculate total area of ocls in pixels
         total_area = (total_area_per_well(pixel_area_list))
 
         total_area_in_um_sqrd = pixel_area_to_um_sqrd(total_area, um_per_pixel) # um per pixel is the ratio user argument
-
-        # Used for testing
-        #print("The total area is", total_area, "pixels", "\n")
 
         if well_area_in_pixels != 0:
             percent_ocl_each_well = percent_ocl_area_per_well(total_area, well_area_in_pixels)
@@ -448,10 +422,6 @@ def main(argv):
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
             
         print("output written")
-    
-    # Update 10/22/24: The total area is now output as um sqrd, no longer based off of the magnification but instead the ratio from the user. 
-
-    
 
     return
     
