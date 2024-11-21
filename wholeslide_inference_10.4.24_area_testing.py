@@ -336,6 +336,7 @@ def main(argv):
     parser.add_argument("--ratio", type=float, default=0.7784) #um per pixel
     parser.add_argument("--device", type=str, default='cpu')
     parser.add_argument("--total_well_area_in_pixels", type = int, default = 0)
+    
 
     args = parser.parse_args()
     
@@ -404,7 +405,8 @@ def main(argv):
         # This will calculate total area of ocls in pixels
         total_area = (total_area_per_well(pixel_area_list))
 
-        total_area_in_um_sqrd = pixel_area_to_um_sqrd(total_area, um_per_pixel) # um per pixel is the ratio user argument
+        # Below was utilized to provide user with total area in um^2, going to provide pixel total area instead
+        #total_area_in_um_sqrd = pixel_area_to_um_sqrd(total_area, um_per_pixel) # um per pixel is the ratio user argument
 
         if well_area_in_pixels != 0:
             percent_ocl_each_well = percent_ocl_area_per_well(total_area, well_area_in_pixels)
@@ -413,11 +415,11 @@ def main(argv):
             #print("The percent of ocl area per well is", str(percent_ocl_each_well) ,"%")
         
         # Need to fix that when no percent ocl area, the area is not written too in output 
-            write_area_to_output(total_area_in_um_sqrd, percent_ocl_each_well, out_dir, keys)
+            write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
         
         else:
             percent_ocl_each_well = "None"
-            write_area_to_output(total_area_in_um_sqrd, percent_ocl_each_well, out_dir, keys)
+            write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
 
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
             
