@@ -423,7 +423,7 @@ def main(argv):
 
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
             
-        print("output written")
+        #print("output written")
 
     return
     
