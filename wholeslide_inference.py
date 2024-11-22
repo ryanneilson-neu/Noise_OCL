@@ -236,6 +236,7 @@ def count_ocls_from_output(out_dir):
     #This will save the output_files to a list from the output directory and only include the txt files
     output_files = glob.glob((out_dir) + "*.txt")
 
+    split_dir = len(out_dir)
     #To iterate over each file in that output directory
     for file in output_files:
         with open(file, "r") as f: # f is now the object of each file
@@ -243,9 +244,9 @@ def count_ocls_from_output(out_dir):
             split_string = as_string.split("\n")
             count_value = (len(split_string[1:-1]))
             with open("ocl_counts.txt", "a") as file:
-                file.write("{id}".format(id=f.name[:-4]) + ": " + str(count_value) + "\n")
+                file.write("{id}".format(id=f.name[split_dir:-4]) + ": " + str(count_value) + "\n")
             file.close
-
+            
 #Below functions are required for area calculations
 def masking_coordinates_to_list(out_dir):
 
