@@ -374,7 +374,6 @@ def main(argv):
     
     count_ocls_from_output(out_dir)
 
-    # Below added for area calculations 
     split_string = masking_coordinates_to_list(out_dir) # Split string variable is now a dictionary, where each each key is a txt and value is a set of masking coordinates.
     
     for keys,values in (split_string.items()):
@@ -386,7 +385,7 @@ def main(argv):
                 
                 coordinate_list_as_floats = [] # New list is now a list of coordinates as a float
                 for i in coordinate_list[5:]: # This will exclude the box coordinates and object score
-                    if len(coordinate_list[5:]) >= 9: #This will make sure that the area is a three sided polygon. 
+                    if len(coordinate_list[5:]) >= 9: #This will make sure that the area is at least a three sided polygon. 
                         flt = float(i)
                         coordinate_list_as_floats.append(flt)
                     else:
@@ -396,26 +395,17 @@ def main(argv):
                 if len(coordinate_list_as_floats) >= 3 :
                     pixel_area = calculate_pixel_area(coordinate_list_as_floats)
 
-                    # This will compute the area in um^2 for each ocl
-                    # um_sqrd = pixel_area_to_um_sqrd(pixel_area,magnification)
-
                 pixel_area_list.append(pixel_area)
 
-        # Below will determine the total area of ocls in each well in um^2.
+        # Below will determine the total area of ocls in each well in pixels.
 
         # This will calculate total area of ocls in pixels
         total_area = (total_area_per_well(pixel_area_list))
 
-        # Below was utilized to provide user with total area in um^2, going to provide pixel total area instead
-        #total_area_in_um_sqrd = pixel_area_to_um_sqrd(total_area, um_per_pixel) # um per pixel is the ratio user argument
-
+        # Below was utilized to provide user with total area in pixels.
         if well_area_in_pixels != 0:
             percent_ocl_each_well = percent_ocl_area_per_well(total_area, well_area_in_pixels)
-
-            #Used for testing
-            #print("The percent of ocl area per well is", str(percent_ocl_each_well) ,"%")
         
-        # Need to fix that when no percent ocl area, the area is not written too in output 
             write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
         
         else:
@@ -423,8 +413,6 @@ def main(argv):
             write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
 
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
-            
-        #print("output written")
 
     return
     
