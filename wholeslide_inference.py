@@ -12,6 +12,7 @@ import torchvision
 import argparse
 import math
 import numpy as np
+import json
 from skspatial.measurement import area_signed
 
 # um/pixel length
@@ -328,11 +329,19 @@ def write_area_to_output(total_area_per_well_sum, percent_area, out_dir,key):
         file.write(f"{key}" + ": " + " Total area = " + str(total_area_per_well_sum) + ":" + " % area = " + str(percent_area) + "\n")
     file.close
 
+def write_usr_args_to_output(usr_model, usr_ratio, use_total_well_area):
+
+    pass
+
 
 def main(argv):
     
     # move the sys args into parser
     parser = argparse.ArgumentParser()
+
+    #Add option to utilize params.json file
+    parser.add_argument("--params", type=str, default=None) #should be the params file path
+
     parser.add_argument("--img_foldername", type=str, default="img")
     parser.add_argument("--out_foldername", type=str, default="out")
     parser.add_argument("--model_path", type=str, default="out")
@@ -342,17 +351,58 @@ def main(argv):
     
 
     args = parser.parse_args()
-    
-    um_per_pixel = args.ratio
-    patch_size = int( UM_PER_PATCH/um_per_pixel )
-    
-    out_dir = args.out_foldername
-    img_dir = args.img_foldername
 
-    well_area_in_pixels = args.total_well_area_in_pixels
+    #json_parameter = args.params
+
+    # for testing
+    json_parameter = "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/params.json"
+
+    if json_parameter != None: # if params file given
+       with open(json_parameter) as params_file: # open the params file
+           data = json.load(params_file) # store params as dict in data
+
+    for param,argument in data.items(): # parse params dict, assigning each usr argument to correct variable
+        
+        if param == "model_path":
+            model_path = argument # the model path is equal to json given argument
+            
+        elif param == "img_foldername":
+            img_dir = argument
+
+        elif param ==  "out_foldername":
+            out_dir = argument
+
+        elif param == "ratio":
+            um_per_pixel = argument
+            patch_size = int( UM_PER_PATCH/um_per_pixel )
+
+        elif param == "total_well_area_in_pixels":
+            well_area_in_pixels = argument 
+
+        elif param == "device":
+            usr_device = argument
+
+        else:
+            print("Check that json keys are as follows; model_path, img_foldername, out_foldername, ratio, and total_well_area_in_pixels")
+
+
+    if json_parameter == None: # If no json params file provided, will use user arguments to run the command
+    
+        um_per_pixel = args.ratio
+        patch_size = int( UM_PER_PATCH/um_per_pixel )
+        
+        out_dir = args.out_foldername
+        img_dir = args.img_foldername
+
+        well_area_in_pixels = args.total_well_area_in_pixels
+
+        model_path = args.model_path
+        model = YOLO(model_path)
+
+        usr_device = args.device
 
     global DEVICE
-    DEVICE = torch.device(args.device)
+    DEVICE = torch.device(usr_device)
     
     if out_dir == img_dir:
         print("Error: Input directory equals output directory. Please specify a unique output directory.")
@@ -362,7 +412,6 @@ def main(argv):
     if not os.path.exists( out_dir ):
         os.makedirs( out_dir )
         
-    model_path = args.model_path
     model = YOLO(model_path)
         
     img_files = [ file for file in os.listdir(img_dir) if not file.startswith(".") ]
