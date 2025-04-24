@@ -1,4 +1,4 @@
-# 4/23/25
+# 4/24/25
 
 import os, sys
 import glob
@@ -232,7 +232,7 @@ def inference(model, img, img_filename, size, out_dir):
     else:
         return [{"boxes":[], "scores":[], "labels":[]}]
     
-def count_ocls_from_output(out_dir):
+'''def count_ocls_from_output(out_dir):
     
     # This script will count each newline for the files in the output directory
 
@@ -248,8 +248,29 @@ def count_ocls_from_output(out_dir):
             count_value = (len(split_string[1:-1]))
             with open("ocl_counts.txt", "a") as file:
                 file.write("{id}".format(id=f.name[split_dir:-4]) + ": " + str(count_value) + "\n")
-            file.close
-            
+            file.close'''
+
+def count_ocls_from_output(out_dir):
+    
+    # This script will count each newline for the files in the output directory
+
+    #This will save the output_files to a list from the output directory and only include the txt files
+    output_files = glob.glob((out_dir) + "*.txt")
+
+    split_dir = len(out_dir)
+    #To iterate over each file in that output directory
+    for file in output_files:
+        counts_list = []
+        with open(file, "r") as f: # f is now the object of each file
+            as_string = str(f.read())
+            split_string = as_string.split("\n")
+            counts_list.append("{id}".format(id=f.name[split_dir:-4]))
+            counts_list.append(str(len(split_string[1:-1])))
+            with open("ocl_counts.csv", "a", newline = '') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(counts_list)
+            csvfile.close
+       
 #Below functions are required for area calculations
 def masking_coordinates_to_list(out_dir):
 
