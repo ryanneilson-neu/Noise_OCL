@@ -1,4 +1,4 @@
-# 4/24/25
+# 4/29/25
 
 import os, sys
 import glob
@@ -231,32 +231,23 @@ def inference(model, img, img_filename, size, out_dir):
         return [{"boxes":box_results[:,:4], "scores":box_results[:,4], "labels":box_results[:,5].int()}]
     else:
         return [{"boxes":[], "scores":[], "labels":[]}]
-    
-'''def count_ocls_from_output(out_dir):
-    
-    # This script will count each newline for the files in the output directory
 
-    #This will save the output_files to a list from the output directory and only include the txt files
-    output_files = glob.glob((out_dir) + "*.txt")
-
-    split_dir = len(out_dir)
-    #To iterate over each file in that output directory
-    for file in output_files:
-        with open(file, "r") as f: # f is now the object of each file
-            as_string = str(f.read())
-            split_string = as_string.split("\n")
-            count_value = (len(split_string[1:-1]))
-            with open("ocl_counts.txt", "a") as file:
-                file.write("{id}".format(id=f.name[split_dir:-4]) + ": " + str(count_value) + "\n")
-            file.close'''
-
-def count_ocls_from_output(out_dir):
+def count_ocls_from_output(img_dir, out_dir):
     
     # This script will count each newline for the files in the output directory
 
     #This will save the output_files to a list from the output directory and only include the txt files
     output_files = glob.glob((out_dir) + "*.txt")
 
+    #Add the image directory name to output file
+    image_dir = (img_dir.rsplit("/")) # split usr give image directory into a list split by /
+
+    # This will make sure that a blank name is not written as part of the ocl_count output folder name
+    if len(image_dir[-1]) > 0:
+        output_name = image_dir[-1]
+    else:
+        output_name = image_dir[-2]
+    
     split_dir = len(out_dir)
     #To iterate over each file in that output directory
     for file in output_files:
@@ -266,7 +257,7 @@ def count_ocls_from_output(out_dir):
             split_string = as_string.split("\n")
             counts_list.append("{id}".format(id=f.name[split_dir:-4]))
             counts_list.append(str(len(split_string[1:-1])))
-            with open("ocl_counts.csv", "a", newline = '') as csvfile:
+            with open("ocl_counts_" + str(output_name) +".csv", "a", newline = '') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(counts_list)
             csvfile.close
@@ -342,18 +333,22 @@ def percent_ocl_area_per_well(total_area, well_area_in_pixels):
 
     return round(perecent_area, 3)
 
-def write_area_to_output(total_area_per_well_sum, percent_area, out_dir,key):
+def write_area_to_output(img_dir, total_area_per_well_sum, percent_area, out_dir ,key):
 
-    '''Function will write each area to a txt.'''
+    '''Function will write each area to a csv.'''
 
-    with open("ocl_area.txt", "a") as file:
-        file.write(f"{key}" + ": " + " Total area = " + str(total_area_per_well_sum) + ":" + " % area = " + str(percent_area) + "\n")
-    file.close
+    image_dir = (img_dir.rsplit("/"))
 
-def write_usr_args_to_output(usr_model, usr_ratio, use_total_well_area):
-
-    pass
-
+    if len(image_dir[-1]) > 0:
+        output_name = image_dir[-1]
+    else:
+        output_name = image_dir[-2]
+    
+    area_output_tuple = [key, "Total_area= ", str(total_area_per_well_sum), "%area=", str(percent_area)] # tuple to store the row to write to csv
+    with open("ocl_area_" + str(output_name) + ".csv", "a", newline = '') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(area_output_tuple)
+    csvfile.close
 
 def main(argv):
     
@@ -444,7 +439,7 @@ def main(argv):
         pred = inference(model, img, img_filename, patch_size, out_dir)
 
     
-    count_ocls_from_output(out_dir)
+    count_ocls_from_output(img_dir, out_dir)
 
     split_string = masking_coordinates_to_list(out_dir) # Split string variable is now a dictionary, where each each key is a txt and value is a set of masking coordinates.
     
@@ -478,11 +473,11 @@ def main(argv):
         if well_area_in_pixels != 0:
             percent_ocl_each_well = percent_ocl_area_per_well(total_area, well_area_in_pixels)
         
-            write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
+            write_area_to_output(img_dir, total_area, percent_ocl_each_well, out_dir, keys)
         
         else:
             percent_ocl_each_well = "None"
-            write_area_to_output(total_area, percent_ocl_each_well, out_dir, keys)
+            write_area_to_output(img_dir, total_area, percent_ocl_each_well, out_dir, keys)
 
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
 
