@@ -1,4 +1,4 @@
-# 4/29/25
+# 5/1/25
 
 import os, sys
 import glob
@@ -248,6 +248,16 @@ def count_ocls_from_output(img_dir, out_dir):
     else:
         output_name = image_dir[-2]
     
+    col_name = ["Image_Name", "Ocl_Count"] # Add the column names to top of csv.
+
+
+    csv_file_name = "ocl_counts_" + str(output_name) +".csv" # file name
+
+    with open(csv_file_name, "a", newline = '') as csvfile:
+        if os.stat(csv_file_name).st_size == 0: # only put the column name row in when the file is empty (at start)
+            writer = csv.writer(csvfile)
+            writer.writerow(col_name)
+        
     split_dir = len(out_dir)
     #To iterate over each file in that output directory
     for file in output_files:
@@ -257,11 +267,11 @@ def count_ocls_from_output(img_dir, out_dir):
             split_string = as_string.split("\n")
             counts_list.append("{id}".format(id=f.name[split_dir:-4]))
             counts_list.append(str(len(split_string[1:-1])))
-            with open("ocl_counts_" + str(output_name) +".csv", "a", newline = '') as csvfile:
+            with open(csv_file_name, "a", newline = '') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(counts_list)
-            csvfile.close
-       
+        csvfile.close
+    
 #Below functions are required for area calculations
 def masking_coordinates_to_list(out_dir):
 
@@ -343,9 +353,19 @@ def write_area_to_output(img_dir, total_area_per_well_sum, percent_area, out_dir
         output_name = image_dir[-1]
     else:
         output_name = image_dir[-2]
-    
-    area_output_tuple = [key, "Total_area= ", str(total_area_per_well_sum), "%area=", str(percent_area)] # tuple to store the row to write to csv
-    with open("ocl_area_" + str(output_name) + ".csv", "a", newline = '') as csvfile:
+    # Add a row for column names to top of file
+
+    col_name = ["Image_Name", "Total_Area", "%_Area"] # First row of csv with column names
+
+    csv_file_name = "ocl_area_" + str(output_name) + ".csv" # name of file to store data
+
+    with open(csv_file_name, "a", newline = '') as csvfile:
+        if os.stat(csv_file_name).st_size == 0: # only put the column name row in when the file is empty (at start)
+            writer = csv.writer(csvfile)
+            writer.writerow(col_name)
+
+    area_output_tuple = [key, str(total_area_per_well_sum), str(percent_area)] # tuple to store the row to write to csv
+    with open(csv_file_name, "a", newline = '') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(area_output_tuple)
     csvfile.close
