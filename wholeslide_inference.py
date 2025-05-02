@@ -1,4 +1,4 @@
-# 5/1/25
+# 5/2/25
 
 import os, sys
 import glob
@@ -250,7 +250,6 @@ def count_ocls_from_output(img_dir, out_dir):
     
     col_name = ["Image_Name", "Ocl_Count"] # Add the column names to top of csv.
 
-
     csv_file_name = "ocl_counts_" + str(output_name) +".csv" # file name
 
     with open(csv_file_name, "a", newline = '') as csvfile:
@@ -364,11 +363,38 @@ def write_area_to_output(img_dir, total_area_per_well_sum, percent_area, out_dir
             writer = csv.writer(csvfile)
             writer.writerow(col_name)
 
-    area_output_tuple = [key, str(total_area_per_well_sum), str(percent_area)] # tuple to store the row to write to csv
+    area_output_tuple = [key[:-4], str(total_area_per_well_sum), str(percent_area)] # tuple to store the row to write to csv
     with open(csv_file_name, "a", newline = '') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(area_output_tuple)
     csvfile.close
+
+def write_individual_ocl_area_to_output(img_dir, all_individual_ocl_areas_dict):
+    '''Going to output a file with all ocl areas'''
+
+    image_dir = (img_dir.rsplit("/"))
+
+    if len(image_dir[-1]) > 0:
+        output_name = image_dir[-1]
+    else:
+        output_name = image_dir[-2]
+
+    col_name = ["Image_Name"]
+
+    csv_file_name = "ocl_individual_areas_" + str(output_name) + ".csv"
+
+    with open(csv_file_name, "a", newline = '') as csvfile:
+        if os.stat(csv_file_name).st_size == 0: # only put the column name row in when the file is empty (at start)
+            writer = csv.writer(csvfile)
+            writer.writerow(col_name)
+
+    with open (csv_file_name,'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for key, value in all_individual_ocl_areas_dict.items():
+            writer.writerow([key[:-4], *value]) # write a row as image name, then the individual areas. 
+
+    csvfile.close()
+
 
 def main(argv):
     
@@ -388,7 +414,11 @@ def main(argv):
 
     args = parser.parse_args()
 
-    json_parameter = args.params
+    #json_parameter = args.params
+
+    #delete below after testing
+
+    json_parameter = "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/params.json"
 
     if json_parameter != None: # if params file given
        with open(json_parameter) as params_file: # open the params file
@@ -460,13 +490,16 @@ def main(argv):
 
     split_string = masking_coordinates_to_list(out_dir) # Split string variable is now a dictionary, where each each key is a txt and value is a set of masking coordinates.
     
+    # Store all individual areas in dict
+
+    all_individual_ocl_areas_dict = {} # key = image_name, value = list of individual ocl areas. 
+
     for keys,values in (split_string.items()):
         pixel_area_list = [] # The list containing the pixel area calculated by the shoelace formula
         file_key = []
         for i in range(len(values)):
             if i != 0 and i != (len(values)-1):
-                coordinate_list = values[i].split(',') 
-                
+                coordinate_list = values[i].split(',')     
                 coordinate_list_as_floats = [] # New list is now a list of coordinates as a float
                 for i in coordinate_list[5:]: # This will exclude the box coordinates and object score
                     if len(coordinate_list[5:]) >= 9: #This will make sure that the area is at least a three sided polygon. 
@@ -481,8 +514,10 @@ def main(argv):
 
                 pixel_area_list.append(pixel_area)
 
-        # Below will determine the total area of ocls in each well in pixels.
+        # create dict of image_name as keys and pixel area of all the individual ocl areas as values. 
+        all_individual_ocl_areas_dict[keys] = pixel_area_list
 
+        # Below will determine the total area of ocls in each well in pixels.
         # This will calculate total area of ocls in pixels
         total_area = (total_area_per_well(pixel_area_list))
 
@@ -498,8 +533,11 @@ def main(argv):
 
             print("If you want total area calculated, please enter pixel area of each well into the --total_well_area_in_pixels argument.")
 
-    return
     
+    # function to create csv with all individual areas. 
+    write_individual_ocl_area_to_output(img_dir, all_individual_ocl_areas_dict)
+
+    return
 
 if __name__ == '__main__':
     main(sys.argv)
