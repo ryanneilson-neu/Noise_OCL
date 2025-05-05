@@ -412,11 +412,7 @@ def main(argv):
 
     args = parser.parse_args()
 
-    #json_parameter = args.params
-
-    #delete below after testing
-
-    json_parameter = "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/params.json"
+    json_parameter = args.params
 
     if json_parameter != None: # if params file given
        with open(json_parameter) as params_file: # open the params file
