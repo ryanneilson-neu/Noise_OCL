@@ -1,9 +1,9 @@
 {
-    "model_path": "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/noise_m_h1.pt",
-    "img_foldername": "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/images_BC_test/",
-    "out_foldername": "/Users/ryanneilson/Desktop/MHIR/noise_ocl/github_working_directory/Noise_OCL/output/",
+    "model_path": "path/to/checkpoint.pt",
+    "img_foldername": "path/to/images/",
+    "out_foldername": "path/to/output/",
     "ratio": 0.75488,
     "device": "cpu",
-    "total_well_area_in_pixels": 3755844 
+    "total_well_area_in_pixels": "integer" 
 
 }
