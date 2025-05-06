@@ -423,25 +423,27 @@ def main(argv):
         if param == "model_path":
             model_path = argument # the model path is equal to json given argument
             
-        elif param == "img_foldername":
+        if param == "img_foldername":
             img_dir = argument
 
-        elif param ==  "out_foldername":
+        if param ==  "out_foldername":
             out_dir = argument
 
-        elif param == "ratio":
+        if param == "ratio":
             um_per_pixel = argument
             patch_size = int( UM_PER_PATCH/um_per_pixel )
 
-        elif param == "total_well_area_in_pixels":
+        if param == "total_well_area_in_pixels":
             well_area_in_pixels = argument 
 
-        elif param == "device":
+        if "total_well_area_in_pixels" not in data:
+            well_area_in_pixels = 0 # sets the well_area to 0, will return None for % area
+
+        if param == "device":
             usr_device = argument
 
-        else:
-            print("Check that json keys are as follows; model_path, img_foldername, out_foldername, ratio, and total_well_area_in_pixels")
-
+        if "device" not in data:
+            usr_device = "cpu" # sets the usr_device to default cpu if it's not provided 
 
     if json_parameter == None: # If no json params file provided, will use user arguments to run the command
     
